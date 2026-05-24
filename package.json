@@ -1,0 +1,27 @@
+{
+  "name": "discord_studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "send:template": "node scripts/send-template.js",
+    "send:telegram": "node scripts/send-telegram.js",
+    "inbox": "node scripts/inbox.js",
+    "complete-task": "node scripts/complete-task.js",
+    "fail-task": "node scripts/fail-task.js",
+    "cleanup:results": "node scripts/cleanup-results.js",
+    "service:install": "bash scripts/install-launch-agent.sh",
+    "service:restart": "bash scripts/restart-launch-agent.sh",
+    "service:uninstall": "bash scripts/uninstall-launch-agent.sh"
+  },
+  "dependencies": {
+    "discord.js": "^14.26.4",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
