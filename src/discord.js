@@ -115,7 +115,7 @@ async function handleStudioCommand(text, message) {
       "`!cleanup task <任务编号>` - 删除某个任务的本地结果文件",
       "`!cleanup project <项目名>` - 删除某个项目的本地结果文件",
       "",
-      "总控类别下的新频道会默认使用 `总控/Cassie 自动`：设置、纠错、分派建议由 Cassie 接；拆任务、规划、汇总由总控接。",
+      "总控类别下的新频道会默认使用 `总控/Cassie 自动`，并默认临时处理本地结果：设置、纠错、分派建议由 Cassie 接；拆任务、规划、汇总由总控接。",
       "",
       "也可以临时指定角色：",
       "`Cass: 这条任务该交给谁？`",
@@ -177,7 +177,7 @@ async function handleStudioCommand(text, message) {
 
   if (roleText) {
     const role = normalizeRole(roleText);
-    const patch = { role, retention: inferRetention(role) };
+    const patch = { role, retention: inferRetentionForMessage(message, role) };
     const session = await updateSession(message, patch);
     return `这个 session 的默认角色设为：${session.role}`;
   }
@@ -258,12 +258,13 @@ async function getSession(message) {
   const key = buildSessionKey(message);
   const existing = sessions[key] || {};
   const channelName = message.channel?.name || "direct-message";
+  const role = existing.role || inferRoleFromName(channelName) || inferRoleFromCategory(message) || "助理 Cassie";
 
   return {
     key,
     project: existing.project || inferProjectName(message),
-    role: existing.role || inferRoleFromName(channelName) || inferRoleFromCategory(message) || "助理 Cassie",
-    retention: existing.retention || inferRetention(existing.role || inferRoleFromName(channelName) || inferRoleFromCategory(message) || "助理 Cassie"),
+    role,
+    retention: existing.retention || inferRetentionForMessage(message, role),
     channelName
   };
 }
@@ -298,11 +299,15 @@ function inferProjectName(message) {
 function inferRoleFromCategory(message) {
   const categoryName = cleanupName(message.channel?.parent?.name || "");
 
-  if (categoryName === "总控") {
+  if (isControlCategoryName(categoryName)) {
     return CONTROL_AUTO_ROLE;
   }
 
   return undefined;
+}
+
+function isControlCategoryName(name) {
+  return cleanupName(name) === "总控";
 }
 
 function inferRoleFromName(name) {
@@ -358,6 +363,14 @@ function parseAssignment(text) {
 
 function inferRetention(role) {
   return role === "管家 Tony" ? "temp" : "archive";
+}
+
+function inferRetentionForMessage(message, role) {
+  if (isControlCategoryName(message.channel?.parent?.name || "")) {
+    return "temp";
+  }
+
+  return inferRetention(role);
 }
 
 function resolveSessionRole(role, text) {
@@ -466,11 +479,15 @@ function startNotificationPolling(client) {
       const notifications = await listPendingNotifications();
 
       for (const notification of notifications) {
-        if (notification.channel !== "discord" || !notification.discordChannelId || !notification.text) {
+        if (
+          notification.channel !== "discord" ||
+          !notification.discordChannelId ||
+          (!notification.text && !notification.files?.length)
+        ) {
           continue;
         }
 
-        await sendDiscordMessage(client, notification.discordChannelId, notification.text);
+        await sendDiscordMessage(client, notification.discordChannelId, notification.text || "", notification.files || []);
         await appendNotificationEvent({
           type: "notification_sent",
           id: notification.id,
@@ -486,14 +503,22 @@ function startNotificationPolling(client) {
   sendPendingNotifications();
 }
 
-async function sendDiscordMessage(client, channelId, text) {
+async function sendDiscordMessage(client, channelId, text, files = []) {
   const channel = await client.channels.fetch(channelId);
 
   if (!channel?.isTextBased()) {
     throw new Error(`Discord channel is not text based: ${channelId}`);
   }
 
-  for (const chunk of splitMessage(text)) {
+  const chunks = splitMessage(text);
+  const firstChunk = chunks.shift() || "";
+
+  await channel.send({
+    content: firstChunk,
+    files
+  });
+
+  for (const chunk of chunks) {
     await channel.send(chunk);
   }
 }

@@ -199,7 +199,7 @@ Set the default Codex role for the current channel/thread. Supported common role
 !studio retention archive
 ```
 
-Choose whether this channel/thread keeps local Codex result files. New channels default to `助理 Cassie` and `archive`. `管家 Tony` defaults to `temp`.
+Choose whether this channel/thread keeps local Codex result files. New channels default to `助理 Cassie` and `archive`. Channels under the `总控` category default to `总控/Cassie 自动` and `temp`. `管家 Tony` defaults to `temp`.
 
 ```text
 !studio team
@@ -247,7 +247,7 @@ Recommended workflow:
 
 ```text
 #inbox
-如果这个频道在 `总控` 类别下，新频道默认会使用 `总控/Cassie 自动`。设置、纠错、分派建议由 Cassie 接；拆任务、规划、汇总由总控接。
+如果这个频道在 `总控` 类别下，新频道默认会使用 `总控/Cassie 自动`，本地结果模式默认是 `temp`。设置、纠错、分派建议由 Cassie 接；拆任务、规划、汇总由总控接。
 
 #项目-总控
 把复杂目标丢给总控 Codex，让它拆任务、分派和汇总。
@@ -333,6 +333,26 @@ Or pass the chat id explicitly:
 
 ```bash
 npm run send:telegram -- 123456789 "任务已完成"
+```
+
+## Discord Proactive Messages
+
+Queue a proactive Discord message through the running Discord Studio bot:
+
+```bash
+npm run send:discord -- <discord_channel_id> "任务已完成"
+```
+
+Queue a message with file attachments:
+
+```bash
+npm run send:discord -- <discord_channel_id> "研报最终版已完成" /absolute/path/report.pdf
+```
+
+The background service sends queued Discord notifications from `data/notifications.ndjson`. Restart the service after code changes:
+
+```bash
+npm run service:restart
 ```
 
 ## Setup

@@ -157,7 +157,7 @@ Implemented:
 Role behavior is now more team-like:
 
 - 总控 Codex: 拆任务、分派、汇总，维护项目全局判断和下一步行动。
-- 助理 Cassie: 发现设置遗漏、命令错误和角色分配不合理时提醒、纠正，并给出正确分派。新频道未设置角色时默认使用 Cassie，默认 `retention=archive`。可用 `Cass:` 或 `Cassie:` 调用。
+- 助理 Cassie: 发现设置遗漏、命令错误和角色分配不合理时提醒、纠正，并给出正确分派。新频道未设置角色时默认使用 Cassie，默认 `retention=archive`；但 `总控` 类别下默认 `retention=temp`。可用 `Cass:` 或 `Cassie:` 调用。
 - 管家 Tony: 处理日常小事、路线餐厅、学习资料、提醒式查询和零碎问答。默认 `retention=temp`。可用 `Tony:` 调用。
 - 研究 Codex: 查资料、做研报、整理证据和来源，输出可追溯结论。
 - 开发 Codex: 写代码、改项目、跑测试、修问题，交付可运行结果。
@@ -168,7 +168,7 @@ The auto worker calls `buildRolePrompt()` so each role gets different rules and 
 
 Special routing:
 
-- New channels under Discord category `总控` default to `总控/Cassie 自动`.
+- New channels under Discord category `总控` default to `总控/Cassie 自动` and `retention=temp`.
 - In that auto mode, setup/correction/routing questions go to `助理 Cassie`; planning, splitting, prioritizing, dispatching, and summary tasks go to `总控 Codex`.
 
 Storage behavior:
@@ -185,6 +185,8 @@ Discord setup is complete:
 - `DISCORD_STUDIO_ENABLED=true`.
 - `DISCORD_ALLOWED_USER_IDS` is set to the user's real Discord user id.
 - Message Content Intent was enabled in Discord Developer Portal.
+- Proactive Discord delivery supports queued text and file attachments via `npm run send:discord -- <discord_channel_id> "message" [file ...]`.
+- 2026-06-01 verification: Discord attachment sender passed Node syntax checks, package parsing, isolated queue-write dry run, and service restart. Startup logs show `Discord studio connected as Hannah AIl in One Studio#8688`.
 
 ## Discord Operating Manual
 
@@ -226,20 +228,21 @@ Recommended usage pattern:
 - Specific project categories are for actual project work.
 - New channels can be created freely; by default they inherit project name from their category.
 - User can use natural language in a configured channel; commands are mainly for setup, cleanup, and explicit routing.
+- For automated deliverables such as final Spotify report PDFs, use the Discord bot proactive path, not manual web Discord upload. Example target for current general TODO delivery: `#todo` channel id `1508163671988109393`.
 
 Default behavior:
 
 - New channel project defaults to the category name.
 - New channel default role is `助理 Cassie`.
 - New channel default storage is `archive`.
-- New channels under category `总控` default to role `总控/Cassie 自动`.
+- New channels under category `总控` default to role `总控/Cassie 自动` and storage `temp`.
 - Channels whose name/category implies `管家`, `日常`, `生活`, `butler`, or `daily` should be used for Tony and `temp`.
 - Setting a channel role to `管家 Tony` automatically sets retention to `temp`.
-- Setting a channel role to other project roles usually keeps/sets retention to `archive`.
+- Setting a channel role to other project roles usually keeps/sets retention to `archive`, except under category `总控`, where the default stays `temp` unless explicitly changed with `!studio retention archive`.
 
 Special `总控` auto-routing:
 
-- In Discord category `总控`, new channels use `总控/Cassie 自动`.
+- In Discord category `总控`, new channels use `总控/Cassie 自动` and local result mode `temp`.
 - If the message is about setup, command correction, routing, "who should handle this", or general confusion, Cassie handles it.
 - If the message is about splitting work, planning, priority, roadmap, project goals, dispatch, progress summaries, or next steps, 总控 handles it.
 - User can still explicitly override with `Cass: ...` or `总控: ...`.
