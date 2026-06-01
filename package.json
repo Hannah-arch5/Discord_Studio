@@ -13,6 +13,8 @@
     "complete-task": "node scripts/complete-task.js",
     "fail-task": "node scripts/fail-task.js",
     "cleanup:results": "node scripts/cleanup-results.js",
+    "service:cron-install": "bash scripts/install-cron-watchdog.sh",
+    "service:cron-uninstall": "bash scripts/uninstall-cron-watchdog.sh",
     "service:install": "bash scripts/install-launch-agent.sh",
     "service:restart": "bash scripts/restart-launch-agent.sh",
     "service:uninstall": "bash scripts/uninstall-launch-agent.sh"

@@ -2,10 +2,10 @@
 set -euo pipefail
 
 LABEL="com.hannah.codex.telegrambot"
-PROJECT_DIR="/Users/hannah/Documents/Codex/2026-05-22/whatsapp"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 PLIST_DIR="${HOME}/Library/LaunchAgents"
 PLIST_PATH="${PLIST_DIR}/${LABEL}.plist"
-NPM_PATH="$(command -v npm)"
+RUNNER_PATH="${PROJECT_DIR}/scripts/run-discord-studio-service.sh"
 USER_ID="$(id -u)"
 
 mkdir -p "${PROJECT_DIR}/data"
@@ -21,8 +21,7 @@ cat > "${PLIST_PATH}" <<PLIST
 
   <key>ProgramArguments</key>
   <array>
-    <string>${NPM_PATH}</string>
-    <string>start</string>
+    <string>${RUNNER_PATH}</string>
   </array>
 
   <key>WorkingDirectory</key>

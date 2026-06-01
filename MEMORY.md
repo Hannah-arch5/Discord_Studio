@@ -1,6 +1,6 @@
 # Project Memory
 
-Last updated: 2026-05-25
+Last updated: 2026-06-01
 
 ## What This Project Is
 
@@ -21,7 +21,21 @@ The goal is:
 /Users/hannah/Documents/Codex/2026-05-22/whatsapp
 ```
 
-This directory is not currently a git repository.
+This directory is the source Git repository for `Discord_Studio`.
+
+GitHub:
+
+```text
+https://github.com/Hannah-arch5/Discord_Studio
+```
+
+The always-on runtime copy lives outside macOS-protected `Documents`:
+
+```text
+/Users/hannah/.discord-studio/Discord_Studio
+```
+
+Reason: macOS blocked LaunchAgent/cron from reading scripts under `Documents/Codex` with `Operation not permitted` / `System Policy deny file-read-data`. Running from `~/.discord-studio/Discord_Studio` avoids the Documents privacy boundary.
 
 ## Telegram Bot
 
@@ -34,7 +48,11 @@ Telegram polling is implemented with Bot API `getUpdates`, so it does not requir
 
 ## Background Service
 
-The bot is installed as a macOS LaunchAgent.
+The bot is installed as a macOS LaunchAgent from the runtime copy:
+
+```text
+/Users/hannah/.discord-studio/Discord_Studio
+```
 
 Useful npm scripts:
 
@@ -42,13 +60,25 @@ Useful npm scripts:
 npm run service:install
 npm run service:restart
 npm run service:uninstall
+npm run service:cron-install
+npm run service:cron-uninstall
 ```
+
+Current service status verified on 2026-06-01:
+
+- LaunchAgent label: `com.hannah.codex.telegrambot`
+- Program: `/Users/hannah/.discord-studio/Discord_Studio/scripts/run-discord-studio-service.sh`
+- `launchctl` state: `running`
+- Discord log: `Discord studio connected as Hannah AIl in One Studio#8688.`
+- Discord send test to `#todo` succeeded.
+
+Important: edit and commit code in the source repo under `Documents/Codex/.../whatsapp`, then copy/sync to the runtime directory before restarting the service.
 
 Logs:
 
 ```text
-data/telegram-bot.out.log
-data/telegram-bot.err.log
+/Users/hannah/.discord-studio/Discord_Studio/data/telegram-bot.out.log
+/Users/hannah/.discord-studio/Discord_Studio/data/telegram-bot.err.log
 ```
 
 After changing source files or `.env`, restart the service.

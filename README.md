@@ -274,7 +274,13 @@ Temporary tasks still keep small task/notification event records, but local Code
 
 ## Run In Background On macOS
 
-Install the Telegram bot as a LaunchAgent:
+The source repo is under `Documents/Codex`, but macOS may block background jobs from reading files inside `Documents`. For always-on use, run the service from a runtime copy outside `Documents`:
+
+```text
+/Users/hannah/.discord-studio/Discord_Studio
+```
+
+Install the bot as a LaunchAgent from the runtime copy:
 
 ```bash
 npm run service:install
@@ -297,6 +303,19 @@ Restart it after code or `.env` changes:
 
 ```bash
 npm run service:restart
+```
+
+Optional fallback watchdog:
+
+```bash
+npm run service:cron-install
+npm run service:cron-uninstall
+```
+
+Current LaunchAgent label:
+
+```text
+com.hannah.codex.telegrambot
 ```
 
 ## Automatic Codex Worker
