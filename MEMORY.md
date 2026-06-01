@@ -1,6 +1,6 @@
 # Project Memory
 
-Last updated: 2026-06-01
+Last updated: 2026-06-02
 
 ## What This Project Is
 
@@ -37,6 +37,8 @@ The always-on runtime copy lives outside macOS-protected `Documents`:
 
 Reason: macOS blocked LaunchAgent/cron from reading scripts under `Documents/Codex` with `Operation not permitted` / `System Policy deny file-read-data`. Running from `~/.discord-studio/Discord_Studio` avoids the Documents privacy boundary.
 
+Do not move the always-on service back into `Documents`, `Desktop`, `Downloads`, iCloud Drive, or other macOS privacy-protected locations. If the service is reinstalled, install it from the runtime directory unless the project has been deliberately migrated to another non-protected path.
+
 ## Telegram Bot
 
 - Bot link: `t.me/Tony_525bot`
@@ -64,7 +66,7 @@ npm run service:cron-install
 npm run service:cron-uninstall
 ```
 
-Current service status verified on 2026-06-01:
+Current service status verified on 2026-06-02:
 
 - LaunchAgent label: `com.hannah.codex.telegrambot`
 - Program: `/Users/hannah/.discord-studio/Discord_Studio/scripts/run-discord-studio-service.sh`
@@ -72,7 +74,14 @@ Current service status verified on 2026-06-01:
 - Discord log: `Discord studio connected as Hannah AIl in One Studio#8688.`
 - Discord send test to `#todo` succeeded.
 
-Important: edit and commit code in the source repo under `Documents/Codex/.../whatsapp`, then copy/sync to the runtime directory before restarting the service.
+Anti-regression rules:
+
+- Source-of-truth code and Git history stay in `/Users/hannah/Documents/Codex/2026-05-22/whatsapp`.
+- Always-on execution happens from `/Users/hannah/.discord-studio/Discord_Studio`.
+- Never point `~/Library/LaunchAgents/com.hannah.codex.telegrambot.plist` at the source repo under `Documents`.
+- After changing source code, copy/sync the changed files to the runtime directory before restarting.
+- Verify with `launchctl print gui/501/com.hannah.codex.telegrambot`: `state = running`, `active count = 1`, and the program path should start with `/Users/hannah/.discord-studio/Discord_Studio/`.
+- If phone Discord messages stop responding again, first check the LaunchAgent path and macOS log for `Operation not permitted` or `System Policy deny file-read-data`; do not rotate tokens or rebuild the Discord bot until the local service path is confirmed.
 
 Logs:
 

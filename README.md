@@ -280,6 +280,12 @@ The source repo is under `Documents/Codex`, but macOS may block background jobs 
 /Users/hannah/.discord-studio/Discord_Studio
 ```
 
+Do not install the always-on LaunchAgent from the source repo under `Documents`; macOS may deny background access and the phone Discord bot will stop responding. The LaunchAgent should point to:
+
+```text
+/Users/hannah/.discord-studio/Discord_Studio/scripts/run-discord-studio-service.sh
+```
+
 Install the bot as a LaunchAgent from the runtime copy:
 
 ```bash
@@ -317,6 +323,14 @@ Current LaunchAgent label:
 ```text
 com.hannah.codex.telegrambot
 ```
+
+Healthy service check:
+
+```bash
+launchctl print gui/501/com.hannah.codex.telegrambot
+```
+
+Expected signs: `state = running`, `active count = 1`, and the program path starts with `/Users/hannah/.discord-studio/Discord_Studio/`.
 
 ## Automatic Codex Worker
 
