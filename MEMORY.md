@@ -1,6 +1,9 @@
 # Project Memory
 
-Last updated: 2026-06-02
+> Global memory: before starting or continuing this project, read `/Users/hannah/Documents/Codex/GLOBAL_MEMORY.md` first.
+
+
+Last updated: 2026-06-07
 
 ## What This Project Is
 
@@ -243,45 +246,68 @@ Current intended Discord structure:
 ```text
 All in One Studio
 
+日常
+  #life-assistant
+
 总控
   #inbox
-  #todo
+  #report-todo
+  #learning-todo
   #done
 
 Hannah's Studio
-  #ai-studio-总控
-  #ai-studio-开发
-  #ai-studio-研究
-  #ai-studio-设计
-  #ai-studio-审查
+  #tony
+  #cassie
+  #ai-studio-lead
+  #ai-studio-research
+  #ai-studio-dev
+  #ai-studio-design
+  #ai-studio-review
 
-Specific project categories, for example:
-Spotify研报
-  #spotify-总控 / #spotify-研报 / other project channels
+Learning
+  #watch-later
+  #research
+  #learning-总控
+  #learning-输出
+
+Project categories, for example:
+Spotify_All in One
+  #research
+  #spotify-总控
+  #spotify-输出
+
+News_ All in One
+  #research
+  #news-总控
+  #news-输出
 ```
 
 Recommended usage pattern:
 
-- `总控` category is for overall management, triage, inbox, TODO, done, and progress review.
+- `总控` category is for overall management, triage, inbox, report TODO, learning TODO, done, and progress review.
 - `Hannah's Studio` category is for talking with different AI team roles generally.
-- Specific project categories are for actual project work.
+- `Learning` is for learning queue/research/learning output.
+- Specific project categories are for actual project work. Current examples: `Spotify_All in One`, `News_ All in One`.
 - New channels can be created freely; by default they inherit project name from their category.
+- When a new project category is created, the bot should auto-create `research`, `<project>-总控`, and `<project>-输出`.
 - User can use natural language in a configured channel; commands are mainly for setup, cleanup, and explicit routing.
 - For automated deliverables such as final Spotify report PDFs, use the Discord bot proactive path, not manual web Discord upload. Example target for current general TODO delivery: `#todo` channel id `1508163671988109393`.
 
 Default behavior:
 
 - New channel project defaults to the category name.
-- New channel default role is `助理 Cassie`.
-- New channel default storage is `archive`.
-- New channels under category `总控` default to role `总控/Cassie 自动` and storage `temp`.
+- New channels under category `总控` default to role `总控/Cassie 自动` and storage `temp`; this includes `report-todo` and `learning-todo`.
+- New channels under category `Learning` default to role `总控/Cassie 自动`; non-output channels use `temp`, output channels use `archive`.
+- New channels under project categories, including `Spotify_All in One` and `News_ All in One`, default to role `总控/Cassie 自动`; non-output channels use `temp`, output channels use `archive`.
+- Output channels are detected by names such as `输出`, `output`, `deliverables`, `final`, or `archive`.
+- New project categories auto-create `research`, `<project>-总控`, and `<project>-输出`; the bot needs Discord `Manage Channels` permission for this.
 - Channels whose name/category implies `管家`, `日常`, `生活`, `butler`, or `daily` should be used for Tony and `temp`.
 - Setting a channel role to `管家 Tony` automatically sets retention to `temp`.
-- Setting a channel role to other project roles usually keeps/sets retention to `archive`, except under category `总控`, where the default stays `temp` unless explicitly changed with `!studio retention archive`.
+- Setting a channel role to other project roles usually keeps/sets retention to `archive`, except under `总控`, `Learning`, and project work channels, where the default stays `temp` unless the channel is an output channel or explicitly changed with `!studio retention archive`.
 
-Special `总控` auto-routing:
+Special `总控/Cassie 自动` routing:
 
-- In Discord category `总控`, new channels use `总控/Cassie 自动` and local result mode `temp`.
+- In Discord categories `总控`, `Learning`, and project categories, new work channels use `总控/Cassie 自动` and local result mode `temp`; output channels use `archive`.
 - If the message is about setup, command correction, routing, "who should handle this", or general confusion, Cassie handles it.
 - If the message is about splitting work, planning, priority, roadmap, project goals, dispatch, progress summaries, or next steps, 总控 handles it.
 - User can still explicitly override with `Cass: ...` or `总控: ...`.

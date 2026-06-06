@@ -199,7 +199,15 @@ Set the default Codex role for the current channel/thread. Supported common role
 !studio retention archive
 ```
 
-Choose whether this channel/thread keeps local Codex result files. New channels default to `助理 Cassie` and `archive`. Channels under the `总控` category default to `总控/Cassie 自动` and `temp`. `管家 Tony` defaults to `temp`.
+Choose whether this channel/thread keeps local Codex result files. New channels default by category:
+
+- `日常`: Tony-style daily work, `temp`.
+- `总控`: `总控/Cassie 自动`, `temp`. This includes `report-todo` and `learning-todo`.
+- `Hannah's Studio`: role channels keep their role-specific defaults.
+- `Learning`: non-output channels use `总控/Cassie 自动`, `temp`; output channels use `archive`.
+- Project categories such as `Spotify_All in One` and `News_All in One`: non-output channels use `总控/Cassie 自动`, `temp`; output channels use `archive`.
+
+For future project categories, the bot auto-creates `research`, `<project>-总控`, and `<project>-输出` when it sees a new project category. This requires the Discord bot role to have `Manage Channels`.
 
 ```text
 !studio team

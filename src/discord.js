@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials } from "discord.js";
+import { ChannelType, Client, GatewayIntentBits, Partials } from "discord.js";
 import { buildCommandReply } from "./executor.js";
 import { appendNotificationEvent, listPendingNotifications } from "./task-store.js";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -11,6 +11,8 @@ const SESSION_FILE = path.join(WORKSPACE, "data", "discord-sessions.json");
 const NOTIFICATION_POLL_MS = 3000;
 const DISCORD_MESSAGE_LIMIT = 1900;
 const CONTROL_AUTO_ROLE = "总控/Cassie 自动";
+const MANAGEMENT_CATEGORY_NAMES = new Set(["日常", "总控", "Hannah's Studio", "Learning"]);
+const OUTPUT_CHANNEL_PATTERN = /(^|[-_\s])(输出|output|deliverable|deliverables|final|archive)([-_\s]|$)/i;
 
 export function hasDiscordConfig() {
   return Boolean(process.env.DISCORD_BOT_TOKEN);
@@ -44,6 +46,10 @@ export function startDiscordStudio() {
 
   client.on("messageCreate", async (message) => {
     await handleDiscordMessage(message);
+  });
+
+  client.on("channelCreate", async (channel) => {
+    await handleChannelCreate(channel);
   });
 
   client.login(process.env.DISCORD_BOT_TOKEN).catch((error) => {
@@ -258,7 +264,7 @@ async function getSession(message) {
   const key = buildSessionKey(message);
   const existing = sessions[key] || {};
   const channelName = message.channel?.name || "direct-message";
-  const role = existing.role || inferRoleFromName(channelName) || inferRoleFromCategory(message) || "助理 Cassie";
+  const role = existing.role || inferDefaultRole(message);
 
   return {
     key,
@@ -296,6 +302,17 @@ function inferProjectName(message) {
   return cleanupName(channelName) || "未分类项目";
 }
 
+function inferDefaultRole(message) {
+  const categoryName = cleanupName(message.channel?.parent?.name || "");
+  const channelName = message.channel?.name || "";
+
+  if (shouldUseAutoRole(categoryName, channelName)) {
+    return CONTROL_AUTO_ROLE;
+  }
+
+  return inferRoleFromName(channelName) || inferRoleFromCategory(message) || "助理 Cassie";
+}
+
 function inferRoleFromCategory(message) {
   const categoryName = cleanupName(message.channel?.parent?.name || "");
 
@@ -308,6 +325,36 @@ function inferRoleFromCategory(message) {
 
 function isControlCategoryName(name) {
   return cleanupName(name) === "总控";
+}
+
+function isLearningCategoryName(name) {
+  return cleanupName(name).toLowerCase() === "learning";
+}
+
+function isDailyCategoryName(name) {
+  const normalized = cleanupName(name).toLowerCase();
+  return ["日常", "管家", "生活", "daily", "life", "butler"].includes(normalized);
+}
+
+function isOutputChannelName(name) {
+  return OUTPUT_CHANNEL_PATTERN.test(cleanupName(name));
+}
+
+function isManagementCategoryName(name) {
+  return MANAGEMENT_CATEGORY_NAMES.has(cleanupName(name));
+}
+
+function isProjectCategoryName(name) {
+  const categoryName = cleanupName(name);
+  return Boolean(categoryName) && !isManagementCategoryName(categoryName);
+}
+
+function shouldUseAutoRole(categoryName, channelName) {
+  if (isControlCategoryName(categoryName) || isLearningCategoryName(categoryName)) {
+    return true;
+  }
+
+  return isProjectCategoryName(categoryName);
 }
 
 function inferRoleFromName(name) {
@@ -366,7 +413,18 @@ function inferRetention(role) {
 }
 
 function inferRetentionForMessage(message, role) {
-  if (isControlCategoryName(message.channel?.parent?.name || "")) {
+  const categoryName = message.channel?.parent?.name || "";
+  const channelName = message.channel?.name || "";
+
+  if (isOutputChannelName(channelName)) {
+    return "archive";
+  }
+
+  if (shouldUseAutoRole(categoryName, channelName)) {
+    return "temp";
+  }
+
+  if (isDailyCategoryName(categoryName)) {
     return "temp";
   }
 
@@ -459,6 +517,53 @@ function isAllowedUser(userId) {
   }
 
   return allowed.includes(String(userId));
+}
+
+async function handleChannelCreate(channel) {
+  if (channel.type !== ChannelType.GuildCategory || !isProjectCategoryName(channel.name)) {
+    return;
+  }
+
+  try {
+    await ensureProjectCategoryChannels(channel);
+  } catch (error) {
+    console.error(`Discord project category setup failed for ${channel.name}:`, error.message);
+  }
+}
+
+async function ensureProjectCategoryChannels(category) {
+  const guild = category.guild;
+  const channels = await guild.channels.fetch();
+  const existingNames = new Set(
+    [...channels.values()]
+      .filter((channel) => channel?.parentId === category.id)
+      .map((channel) => cleanupName(channel.name).toLowerCase())
+  );
+  const slug = buildProjectChannelSlug(category.name);
+  const desired = ["research", `${slug}-总控`, `${slug}-输出`];
+
+  for (const name of desired) {
+    if (existingNames.has(cleanupName(name).toLowerCase())) {
+      continue;
+    }
+
+    await guild.channels.create({
+      name,
+      type: ChannelType.GuildText,
+      parent: category.id
+    });
+  }
+}
+
+function buildProjectChannelSlug(categoryName) {
+  const firstPart = categoryName.split(/[_\s]+/).find(Boolean) || categoryName;
+  const normalized = firstPart
+    .toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fa5-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return normalized || "project";
 }
 
 async function readSessions() {
