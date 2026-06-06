@@ -207,7 +207,7 @@ Choose whether this channel/thread keeps local Codex result files. New channels 
 - `Learning`: non-output channels use `总控/Cassie 自动`, `temp`; output channels use `archive`.
 - Project categories such as `Spotify_All in One` and `News_All in One`: non-output channels use `总控/Cassie 自动`, `temp`; output channels use `archive`.
 
-For future project categories, the bot auto-creates `research`, `<project>-总控`, and `<project>-输出` when it sees a new project category. This requires the Discord bot role to have `Manage Channels`.
+For future project categories, the bot auto-creates `research`, `<project>-总控`, and `<project>-输出` when it sees a new project category. This requires the Discord bot role to have `Manage Channels`; this permission was enabled and verified on 2026-06-07.
 
 ```text
 !studio team

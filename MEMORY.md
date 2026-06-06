@@ -301,6 +301,7 @@ Default behavior:
 - New channels under project categories, including `Spotify_All in One` and `News_ All in One`, default to role `总控/Cassie 自动`; non-output channels use `temp`, output channels use `archive`.
 - Output channels are detected by names such as `输出`, `output`, `deliverables`, `final`, or `archive`.
 - New project categories auto-create `research`, `<project>-总控`, and `<project>-输出`; the bot needs Discord `Manage Channels` permission for this.
+- 2026-06-07: Discord bot role has `Manage Channels`; verified by renaming `#leaning-todo` to `#learning-todo`. Future project-category channel auto-creation should now be allowed.
 - Channels whose name/category implies `管家`, `日常`, `生活`, `butler`, or `daily` should be used for Tony and `temp`.
 - Setting a channel role to `管家 Tony` automatically sets retention to `temp`.
 - Setting a channel role to other project roles usually keeps/sets retention to `archive`, except under `总控`, `Learning`, and project work channels, where the default stays `temp` unless the channel is an output channel or explicitly changed with `!studio retention archive`.
